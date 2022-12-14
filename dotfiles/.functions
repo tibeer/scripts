@@ -1,0 +1,25 @@
+ctx() {
+  if test -z "${1}"; then
+    kubectl config get-contexts
+  else
+    kubectl config use-context "${1}"
+  fi
+}
+
+cloud() {
+  if test -z "${1}"; then
+    grep '^[[:space:]]\{2\}[^ ]' ~/.config/openstack/clouds.yaml | tr ":" " " | awk '{print $1}'
+  else
+    export OS_CLOUD="${1}"
+  fi
+  echo CURRENT CLOUD: "${OS_CLOUD}"
+  echo ""
+}
+
+update() {
+  brew update
+  brew upgrade
+  for cask in $(brew list --cask -1); do
+    brew upgrade --cask "${cask}" --greedy
+  done
+}
