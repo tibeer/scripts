@@ -17,9 +17,12 @@ export OS_CLOUD=beermann
 # aliases
 source ~/.aliases
 
-#functions
+# functions
 source ~/.functions
 
 # keybindings (allow "pos1" and "end" key usage inside terminal)
 bindkey "^[[H" beginning-of-line
 bindkey "^[[F" end-of-line
+
+# path additions
+export PATH="${PATH}:${HOME}/.krew/bin"
