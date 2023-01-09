@@ -10,9 +10,10 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 
 # exports
 export EDITOR=vim
-export GOPATH=/Users/columbia/go
-export KUBECONFIG=$(find ~/.kube -name '*.yaml' | paste -sd ':' -)
+export GOPATH="${HOME}/go"
+export KUBECONFIG=$(find "${HOME}/.kube" -name '*.yaml' | paste -sd ':' -)
 export OS_CLOUD=beermann
+export PATH="${PATH}:${HOME}/.krew/bin"
 
 # aliases
 source ~/.aliases
@@ -23,6 +24,3 @@ source ~/.functions
 # keybindings (allow "pos1" and "end" key usage inside terminal)
 bindkey "^[[H" beginning-of-line
 bindkey "^[[F" end-of-line
-
-# path additions
-export PATH="${PATH}:${HOME}/.krew/bin"
