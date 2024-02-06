@@ -1,0 +1,33 @@
+# git
+alias gc='git commit -s'
+alias gca='git commit --amend --no-edit'
+alias gpf='git push --force-with-lease'
+alias grpo='git remote prune origin'
+
+# gitlab
+alias gl='glab mr create --fill --push --remove-source-branch --squash-before-merge --yes'
+
+# kubernetes
+alias k='kubectl'
+
+# ls
+alias ll='ls -l'
+alias la='ls -al'
+
+# openstack
+alias os='openstack'
+
+# ssh
+alias startsshd='sudo launchctl load -w  /System/Library/LaunchDaemons/ssh.plist'
+alias stopsshd='sudo launchctl unload  /System/Library/LaunchDaemons/ssh.plist'
+
+# terraform
+alias tf='terraform'
+alias tfd='terraform destroy -auto-approve'
+alias tfa='terraform apply -auto-approve'
+alias tfo='terraform output'
+alias tfi='terraform init'
+
+# wireguard
+alias wg-list='sudo ls /usr/local/etc/wireguard'
+alias wg-status='sudo wg show'

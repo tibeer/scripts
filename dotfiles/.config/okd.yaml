@@ -1,0 +1,5 @@
+---
+username: "FOO"
+password: "BAR"
+server: "https://okd.myurl.com:6443"
+extra_args: "--insecure-skip-tls-verify=true"

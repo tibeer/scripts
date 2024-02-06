@@ -1,0 +1,60 @@
+ctx() {
+  if test -z "${1}"; then
+    kubectl config get-contexts
+  else
+    kubectl config use-context "${1}"
+  fi
+}
+
+cloud() {
+  if test -z "${1}"; then
+    grep '^[[:space:]]\{2\}[^ ]' "${HOME}/.config/openstack/clouds.yaml" | tr ":" " " | awk '{print $1}'
+  else
+    export OS_CLOUD="${1}"
+  fi
+  echo CURRENT CLOUD: "${OS_CLOUD}"
+  echo ""
+}
+
+update() {
+  brew update
+  brew upgrade
+  for cask in $(brew list --cask -1); do
+    brew upgrade --cask "${cask}" --greedy
+  done
+}
+
+login() {
+  # openshift okd uses it's own cli, but I would like to stay to my normal tools and select my own names
+  # so this function creates a temporary okd config, extracts the token and puts it into a normal kubeconfig
+  old_ctx=$(kubectl config get-contexts | grep "^\*" | awk '{print $2}')
+
+  export KUBECONFIG="${HOME}/.kube/config"
+  config="${HOME}/.config/okd.yaml"
+
+  oc login -u "$(yq '.username' "${config}")" -p "$(yq '.password' "${config}")" "$(yq '.server' "${config}")" $(yq '.extra_args' "${config}") > /dev/null
+  # alternatively pull secrets from keepassxc (in this case I use a second keepass database to seperate work (okd.kdbx) and private (passwords.kdbx) passwords)
+  #echo "Enter keepassxc password: "
+  #read -r -s keepassxc_password
+  #okdusername="$(echo "$(echo -n "$keepassxc_password" | keepassxc-cli show /Users/tux/passwords.kdbx '/AutoOpen/okd' -q -s -a password)" | keepassxc-cli show /Users/tux/okd.kdbx '/okd_pass' -q -s -a username)"
+  #okdpassword="$(echo "$(echo -n "$keepassxc_password" | keepassxc-cli show /Users/tux/passwords.kdbx '/AutoOpen/okd' -q -s -a password)" | keepassxc-cli show /Users/tux/okd.kdbx '/okd_pass' -q -s -a password)"
+  #if test -z "${okdusername}" || test -z "${okdpassword}"; then
+  #  echo "Could not extract login credentials from keepass database. Maybe you typed the wrong password?"
+  #  return
+  #fi
+  #oc login -u "${okdusername}" -p "${okdpassword}" "$(yq '.server' "${config}")" $(yq '.extra_args' "${config}") > /dev/null
+  #unset keepassxc_password
+  #unset okdusername
+  #unset okdpassword
+
+  token="$(tail -1 "${HOME}/.kube/config" | awk '{print $2}')"
+  if test -z "${token}"; then
+    echo "Token is empty. This might indicate, that an okd password rotation is needed."
+    return
+  fi
+  echo "current-context: ${old_ctx}" > "${KUBECONFIG}"
+  kube_config="${HOME}/.kube/config:$(find "${HOME}/.kube" -name '*.yaml' | paste -sd ':' -)"
+  export KUBECONFIG="${kube_config}"
+  kubectl config use-context "${old_ctx}"
+  sed -i '' "s/token.*$/token: ${token}/" "${HOME}/.kube/okd.yaml"
+}

@@ -1,0 +1,9 @@
+example:
+  foo: bar2
+foo:
+  alpha: "centauri"
+  bar:
+    baz:
+      - 2
+      - 1
+test: {}

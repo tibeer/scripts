@@ -1,0 +1,140 @@
+---
+- name: Prepare nodes
+  hosts: all
+  remote_user: root
+  any_errors_fatal: true
+  tasks:
+    - name: Check if swap is active
+      ansible.builtin.command:
+        cmd: swapon -s
+      changed_when: false
+      register: check_swap
+
+    - name: Disable swap
+      ansible.builtin.command:
+        cmd: swapoff -a
+      changed_when: true
+      when: check_swap.stdout_lines | length > 0
+
+    - name: Remove swap entries from /etc/fstab
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+        replace: '# \1'
+
+    - name: Create required directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /etc/apt/keyrings
+        - /etc/containerd/
+
+    - name: Install base packages
+      ansible.builtin.apt:
+        update_cache: true
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - containerd
+          - curl
+          - gnupg
+          - runc
+
+    - name: Fetch google gpg key
+      ansible.builtin.apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        keyring: /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+
+    - name: Add kubernetes apt source
+      ansible.builtin.apt_repository:
+        repo: deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+        update_cache: true
+        mode: '0644'
+
+    - name: Install kubernetes packages
+      ansible.builtin.apt:
+        name:
+          - kubeadm
+          - kubectl
+          - kubelet
+
+    - name: Mark kubernetes packages hold
+      ansible.builtin.dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+        - kubeadm
+        - kubectl
+        - kubelet
+
+    - name: Configure kubelet systemd unit
+      ansible.builtin.blockinfile:
+        create: true
+        path: /etc/systemd/system/kubelet.service.d/20-hcloud.conf
+        mode: '0644'
+        block: |
+          [Service]
+          Environment="KUBELET_EXTRA_ARGS=--cloud-provider=external"
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Load kernel modules
+      community.general.modprobe:
+        name: "{{ item }}"
+        persistent: present
+      loop:
+        - overlay
+        - br_netfilter
+
+    - name: Load sysctl config
+      ansible.posix.sysctl:
+        name: "{{ item }}"
+        value: 1
+      loop:
+        - net.bridge.bridge-nf-call-iptables
+        - net.bridge.bridge-nf-call-ip6tables
+        - net.ipv4.ip_forward
+        - net.ipv6.conf.all.forwarding
+        - net.ipv6.conf.default.forwarding
+
+    - name: Generate containerd config
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail && containerd config default | \
+          sed 's/SystemdCgroup \= false/SystemdCgroup \= true/g' | \
+          sed 's/sandbox_image \= "registry.k8s.io\/pause\:3\.6"/sandbox_image \= "registry.k8s.io\/pause\:3\.9"/g'
+      args:
+        executable: /bin/bash
+      changed_when: false
+      register: containerd_config
+
+    - name: Write containerd config
+      ansible.builtin.copy:
+        content: "{{ containerd_config.stdout }}"
+        dest: /etc/containerd/config.toml
+        mode: '0644'
+      register: containerd
+
+    - name: Restart containerd
+      ansible.builtin.systemd:
+        state: restarted
+        name: containerd
+      when: containerd.changed
+
+#    - name: Check if kubernetes is alreay running
+#      ansible.builtin.service_facts:
+#
+#    - name: Flush iptables
+#      ansible.builtin.command:
+#        cmd: "{{ item }}"
+#      when: ansible_facts.services['kubelet.service']['state'] == "stopped"
+#      changed_when: true
+#      loop:
+#        - iptables --flush
+#        - iptables -tnat --flush
+#
+#kubeadm token create --print-join-command

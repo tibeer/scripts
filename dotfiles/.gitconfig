@@ -1,0 +1,11 @@
+[user]
+	name = Tim Beermann
+	email = *****
+[gitreview]
+	username = tibeer
+[format]
+	signoff = true
+[init]
+	defaultBranch = main
+[pull]
+	rebase = false
