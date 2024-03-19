@@ -15,15 +15,21 @@ kube_config="$(find "${HOME}/.kube" -name '*.yaml' | paste -sd ':' -)"
 export KUBECONFIG="${HOME}/.kube/config:${kube_config}"
 export OS_CLOUD=beermann
 export PATH="${PATH}:${HOME}/.krew/bin"
+export PATH="/opt/homebrew/opt/openjdk/bin:${PATH}"
+export PATH="${PATH}:/Users/tbeermann/go/bin"
 
 # aliases
 source "${HOME}/.aliases"
 
 # functions
 source "${HOME}/.functions"
+source "${HOME}/.functions_jenkins"
 
 # additional secrets
 source "${HOME}/.config/hcloud"
+source "${HOME}/.config/aws"
+#source "${HOME}/.config/jira"
+#source "${HOME}/.config/jenkins"
 
 # keybindings (allow "pos1" and "end" key usage inside terminal)
 bindkey "^[[H" beginning-of-line

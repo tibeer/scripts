@@ -52,6 +52,7 @@ login() {
     echo "Token is empty. This might indicate, that an okd password rotation is needed."
     return
   fi
+
   echo "current-context: ${old_ctx}" > "${KUBECONFIG}"
   kube_config="${HOME}/.kube/config:$(find "${HOME}/.kube" -name '*.yaml' | paste -sd ':' -)"
   export KUBECONFIG="${kube_config}"

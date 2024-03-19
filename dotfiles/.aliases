@@ -31,3 +31,4 @@ alias tfi='terraform init'
 # wireguard
 alias wg-list='sudo ls /usr/local/etc/wireguard'
 alias wg-status='sudo wg show'
+
