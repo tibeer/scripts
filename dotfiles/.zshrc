@@ -30,6 +30,7 @@ source "${HOME}/.config/hcloud"
 source "${HOME}/.config/aws"
 #source "${HOME}/.config/jira"
 #source "${HOME}/.config/jenkins"
+#source "${HOME}/.config/age"
 
 # keybindings (allow "pos1" and "end" key usage inside terminal)
 bindkey "^[[H" beginning-of-line
