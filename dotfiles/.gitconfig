@@ -1,11 +1,18 @@
-[user]
-	name = Tim Beermann
-	email = *****
+[commit]
+	gpgSign = true
+[format]
+	signOff = true
 [gitreview]
 	username = tibeer
-[format]
-	signoff = true
+[gpg]
+	format = ssh
 [init]
 	defaultBranch = main
 [pull]
 	rebase = false
+[tag]
+	gpgSign = true
+[user]
+	email = *****
+	name = Tim Beermann
+	signingKey = ~/.ssh/id_ed25519.pub
