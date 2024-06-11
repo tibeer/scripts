@@ -59,3 +59,22 @@ login() {
   kubectl config use-context "${old_ctx}"
   sed -i '' "s/token.*$/token: ${token}/" "${HOME}/.kube/okd.yaml"
 }
+
+diffversions() {
+  # Read command output line by line into array ${lines [@]}
+  IFS=$'\n' read -r -d '' -A lines < <(git tag -l && printf '\0' )
+
+  # Prompt the user to select one of the lines.
+  echo "Please select a source tag:"
+  select tag_src in "${lines[@]}"; do
+    [[ -n $tag_src ]] || { echo "Invalid choice. Please try again." >&2; continue; }
+    break # valid choice was made; exit prompt.
+  done
+  echo "Please select a destination tag:"
+  select tag_dst in "${lines[@]}"; do
+    [[ -n $tag_dst ]] || { echo "Invalid choice. Please try again." >&2; continue; }
+    break # valid choice was made; exit prompt.
+  done
+
+  git difftool -y -x "code --wait --diff \$LOCAL \$REMOTE" "${tag_src}" "${tag_dst}" -- "${1}"
+}
