@@ -1,5 +1,5 @@
 # The following lines were added by compinstall
-zstyle :compinstall filename '/Users/columbia/.zshrc'
+zstyle :compinstall filename "${HOME}/.zshrc"
 
 autoload -Uz compinit
 compinit
@@ -16,7 +16,7 @@ export KUBECONFIG="${HOME}/.kube/config:${kube_config}"
 export OS_CLOUD=beermann
 export PATH="${PATH}:${HOME}/.krew/bin"
 export PATH="/opt/homebrew/opt/openjdk/bin:${PATH}"
-export PATH="${PATH}:/Users/tbeermann/go/bin"
+export PATH="${PATH}:${HOME}/go/bin"
 
 # aliases
 source "${HOME}/.aliases"
@@ -32,6 +32,7 @@ source "${HOME}/.config/equinix"
 source "${HOME}/.config/hcloud"
 source "${HOME}/.config/jenkins"
 source "${HOME}/.config/jira"
+source "${HOME}/.config/google"
 
 # keybindings (allow "pos1" and "end" key usage inside terminal)
 bindkey "^[[H" beginning-of-line
