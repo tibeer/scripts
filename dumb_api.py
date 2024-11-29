@@ -19,4 +19,3 @@ async def root(item: Item):
     if len(item.name) < 4:
         raise HTTPException(status_code=400, detail="Not a valid name")
     return item
-
