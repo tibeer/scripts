@@ -78,3 +78,31 @@ diffversions() {
 
   git difftool -y -x "code --wait --diff \$LOCAL \$REMOTE" "${tag_src}" "${tag_dst}" -- "${1}"
 }
+
+camunda() {
+  podman machine start > /dev/null 2>&1
+  if ! test $(podman ps -a --format "{{.Names}}" --filter name=camunda); then
+    podman run -d --name camunda -p 8080:8080 docker.io/camunda/camunda-bpm-platform:run-latest
+  fi
+}
+
+swagger() {
+  podman machine start > /dev/null 2>&1
+  if ! test $(podman ps -a --format "{{.Names}}" --filter name=swagger); then
+    podman run -d --name swagger -p 9000:8080 docker.io/swaggerapi/swagger-editor:latest
+  fi
+}
+
+hetzner() {
+  if test -z "${1}"; then
+    for item in $(grep -v export "${HOME}/.config/hcloud" | cut -d '=' -f 1); do
+      if test "${item}" = "$(grep 'export HCLOUD_TOKEN' "${HOME}/.config/hcloud" | cut -d '{' -f 2 | cut -d '}' -f 1)"; then
+        echo "${item}*"
+      else
+        echo "${item}"
+      fi
+    done
+  else
+    export HCLOUD_TOKEN="$(grep -e ^${1} ${HOME}/.config/hcloud | cut -d '=' -f 2)"
+  fi
+}

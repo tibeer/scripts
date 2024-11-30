@@ -1,0 +1,131 @@
+#!/bin/bash
+#
+# Manage Jenkins pipelines from terminal
+#
+##########################################
+
+jenkins() {
+    # settings for jenkins
+    base_url="${JENKINS_BASE_URL}"
+    url="${base_url}/job/FintusDevTeam/view"
+    login="${JENKINS_USER_NAME}:${JENKINS_API_TOKEN}"
+
+    # settgings for dialog
+    HEIGHT=20
+    WIDTH=40
+    CHOICE_HEIGHT=4
+    TITLE="Jenkins CLI client"
+
+    select_method() {
+        MENU="Choose method:"
+        OPTIONS=("Scale deployment" ""
+                 "Update configmaps" ""
+                 "Build" "")
+        CHOICE=$(dialog --clear \
+                        --stdout \
+                        --title "$TITLE" \
+                        --menu "$MENU" \
+                        $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                        "${OPTIONS[@]}")
+        echo "${CHOICE}"
+    }
+
+    select_environment() {
+        MENU="Choose environment:"
+        OPTIONS=("dev-core-5" ""
+                 "" ""
+                 "dev-core-1" ""
+                 "dev-core-2" ""
+                 "dev-core-3" ""
+                 "dev-core-4" ""
+                 "dev-core-6" ""
+                 "dev-core-7" ""
+                 "dev-core-8" ""
+                 "dev-core-0" "")
+        CHOICE=$(dialog --clear \
+                        --stdout \
+                        --title "$TITLE" \
+                        --menu "$MENU" \
+                        $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                        "${OPTIONS[@]}")
+        echo "${CHOICE}"
+    }
+
+    select_deployment() {
+        MENU="Choose deployment:"
+        OPTIONS=("sq-api" ""
+                 "csc-api" ""
+                 "sq-client" ""
+                 "" ""
+                 "core-api" ""
+                 "core-camunda-dev" ""
+                 "core-client" ""
+                 "keycloak" ""
+                 "pcm-api" ""
+                 "pcm-client" ""
+                 "pdm-api" ""
+                 "pgadmin" ""
+                 "po-api" ""
+                 "po-client" ""
+                 "postgresql" ""
+                 "ssp-api" ""
+                 "ssp-client" "")
+        CHOICE=$(dialog --clear \
+                        --stdout \
+                        --title "$TITLE" \
+                        --menu "$MENU" \
+                        $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                        "${OPTIONS[@]}")
+        echo "${CHOICE}"
+    }
+
+    select_scale() {
+        MENU="Choose scale method:"
+        OPTIONS=("Pause" ""
+                 "Restart" ""
+                 "Resume" "")
+        CHOICE=$(dialog --clear \
+                        --stdout \
+                        --title "$TITLE" \
+                        --menu "$MENU" \
+                        $HEIGHT $WIDTH $CHOICE_HEIGHT \
+                        "${OPTIONS[@]}")
+        echo "${CHOICE}"
+    }
+
+    select_branch() {
+        MENU="Choose branch:"
+        CHOICE=$(dialog --clear \
+                        --stdout \
+                        --title "$TITLE" \
+                        --inputbox "$MENU" \
+                        $HEIGHT $WIDTH "deploy")
+        echo "${CHOICE}"
+    }
+
+    method=$(select_method)
+    if test -z "${method}"; then clear; exit 1; fi
+    environment=$(select_environment)
+    if test -z "${environment}"; then clear; exit 1; fi
+    # update config maps
+    if [ "${method}" = "Update configmaps" ]; then
+        clear
+        curl -X POST -u "${login}" "${url}/${environment}/job/${environment}_UPDATE_CONFIGMAPS/build"
+    # scale
+    elif [ "${method}" = "Scale deployment" ]; then
+        deployment=$(select_deployment)
+        if test -z "${deployment}"; then clear; exit 1; fi
+        scale=$(select_scale)
+        if test -z "${scale}"; then clear; exit 1; fi
+        clear
+        curl -X POST -u "${login}" "${url}/Utilities/job/SCALE_DEPLOYMENT/buildWithParameters" -d "Namespace=${environment}" -d "Deployment=${deployment}" -d "DeployAction=${scale}"
+    # build
+    elif [ "${method}" = "Build" ]; then
+        deployment=$(select_deployment)
+        if test -z "${deployment}"; then clear; exit 1; fi
+        branch=$(select_branch)
+        if test -z "${branch}"; then clear; exit 1; fi
+        clear
+        curl -X POST -u "${login}" "${url}/${environment}/job/${environment}_${deployment}/buildWithParameters" -d "repo_branch=${branch}"
+    fi
+}

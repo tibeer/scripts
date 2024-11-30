@@ -17,6 +17,7 @@ export OS_CLOUD=beermann
 export PATH="${PATH}:${HOME}/.krew/bin"
 export PATH="/opt/homebrew/opt/openjdk/bin:${PATH}"
 export PATH="${PATH}:${HOME}/go/bin"
+export PATH="${PATH}:/Users/tbeermann/.local/bin"
 
 # aliases
 source "${HOME}/.aliases"
