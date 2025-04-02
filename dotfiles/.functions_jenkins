@@ -99,7 +99,7 @@ jenkins() {
                         --stdout \
                         --title "$TITLE" \
                         --inputbox "$MENU" \
-                        $HEIGHT $WIDTH "deploy")
+                        $HEIGHT $WIDTH "develop")
         echo "${CHOICE}"
     }
 
@@ -110,7 +110,7 @@ jenkins() {
     # update config maps
     if [ "${method}" = "Update configmaps" ]; then
         clear
-        curl -X POST -u "${login}" "${url}/${environment}/job/${environment}_UPDATE_CONFIGMAPS/build"
+        queue_url=$(curl -sS -D - -X POST -u "${login}" "${url}/${environment}/job/${environment}_UPDATE_CONFIGMAPS/build" | grep location | awk '{print $2}' | tr -d '\n' | tr -d '\r')
     # scale
     elif [ "${method}" = "Scale deployment" ]; then
         deployment=$(select_deployment)
@@ -118,7 +118,7 @@ jenkins() {
         scale=$(select_scale)
         if test -z "${scale}"; then clear; exit 1; fi
         clear
-        curl -X POST -u "${login}" "${url}/Utilities/job/SCALE_DEPLOYMENT/buildWithParameters" -d "Namespace=${environment}" -d "Deployment=${deployment}" -d "DeployAction=${scale}"
+        queue_url=$(curl -sS -D - -X POST -u "${login}" "${url}/Utilities/job/SCALE_DEPLOYMENT/buildWithParameters" -d "Namespace=${environment}" -d "Deployment=${deployment}" -d "DeployAction=${scale}" | grep location | awk '{print $2}' | tr -d '\n' | tr -d '\r')
     # build
     elif [ "${method}" = "Build" ]; then
         deployment=$(select_deployment)
@@ -126,6 +126,56 @@ jenkins() {
         branch=$(select_branch)
         if test -z "${branch}"; then clear; exit 1; fi
         clear
-        curl -X POST -u "${login}" "${url}/${environment}/job/${environment}_${deployment}/buildWithParameters" -d "repo_branch=${branch}"
+        queue_url=$(curl -sS -D - -X POST -u "${login}" "${url}/${environment}/job/${environment}_${deployment}/buildWithParameters" -d "repo_branch=${branch}" | grep location | awk '{print $2}' | tr -d '\n' | tr -d '\r')
     fi
+
+    wait_for_job_url=true
+    while true; do
+        queued_jobs="${queue_url/http/https}api/json"
+
+        # wait for build url
+        while $wait_for_job_url; do
+            job_url=$(curl -s -u "${JENKINS_USER_NAME}:${JENKINS_API_TOKEN}" "${queued_jobs}" | jq -r '.executable.url')
+            # check if we got a return value, otherwise repeat
+            url_start=$(echo "${job_url}" | cut -c 1-4)
+            if test "${url_start}" = "http"; then
+                running_job="${job_url/http/https}api/json"
+                wait_for_job_url=false
+            fi
+            sleep 1
+            clear
+            echo "[INFO] Jenkins build job monitoring"
+            echo "$(date) - waiting for job to start ..." 
+        done
+        output="Job Name|Building|Status|Build Duration\n"
+        # do not try to "improve" this logic by storing the output of jenkins to a variable and parse it later
+        # jenkins replies with ascii control codes like \u000a which will be ignored when directly called, but will be interpreted once used with awk, echo or printf
+        # trying to replace those with sed will make things even worse. btw: jenkins replies also with \n\r, so it was designed for windows users -.-
+        name=$(curl -s -u "${JENKINS_USER_NAME}:${JENKINS_API_TOKEN}" "${running_job}" | jq -r '.fullDisplayName')
+        result=$(curl -s -u "${JENKINS_USER_NAME}:${JENKINS_API_TOKEN}" "${running_job}" | jq -r '.result')
+        building=$(curl -s -u "${JENKINS_USER_NAME}:${JENKINS_API_TOKEN}" "${running_job}" | jq -r '.building')
+        duration=$(curl -s -u "${JENKINS_USER_NAME}:${JENKINS_API_TOKEN}" "${running_job}" | jq -r '.duration')
+        timestamp=$(curl -s -u "${JENKINS_USER_NAME}:${JENKINS_API_TOKEN}" "${running_job}" | jq -r '.timestamp')
+        
+        # calculate times and durations
+        elapsed_time_in_seconds=$(( $(date +%s) - (timestamp / 1000) ))
+        elapsed_time="$(( elapsed_time_in_seconds / 60 ))m$(( elapsed_time_in_seconds % 60 ))s"
+        duration="$(( duration / 60000 ))m$(( duration % 60000 / 1000 ))s"
+
+        # append line to output
+        output="${output}${name}|${building}|${result}|${duration}\n"
+
+        # if a job status is not "null", we can break the loop
+        if test "${result}" != "null"; then
+            break
+        fi
+
+        # clean the screen, print date (to make user aware, that the script is still doing stuff) and print output
+        sleep 1
+        clear
+        echo "[INFO] Jenkins build job monitoring"
+        echo "$(date) - elapsed time is ${elapsed_time}"
+        echo ""
+        echo -e "${output}" | column -t -s '|'
+    done
 }

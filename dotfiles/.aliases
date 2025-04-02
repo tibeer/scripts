@@ -5,7 +5,7 @@ alias gpf='git push --force-with-lease'
 alias grpo='git remote prune origin'
 
 # gitlab
-alias gl='glab mr create --fill --push --remove-source-branch --squash-before-merge --yes'
+alias gl='glab mr create --fill --push --remove-source-branch --squash-before-merge --yes -b'
 
 # kubernetes
 alias k='kubectl'
@@ -14,8 +14,8 @@ alias sqv3='kubectl port-forward svc/minio 5000:80'
 alias psql='kubectl exec -it "$(kubectl get pods -l app=postgresql -o name | tail -1)" -- /bin/sh -c "PGPASSWORD=$(echo $(kubectl get secret postgresql -o jsonpath='{.data.PASSWORD}' | base64 -d)) /usr/bin/psql -U postgres"'
 
 # ls
-alias ll='ls -l'
 alias la='ls -al'
+alias ll='ls -l'
 
 # openstack
 alias os='openstack'
@@ -29,10 +29,10 @@ alias stopsshd='sudo launchctl unload  /System/Library/LaunchDaemons/ssh.plist'
 
 # terraform
 alias tf='terraform'
-alias tfd='terraform destroy -auto-approve'
 alias tfa='terraform apply -auto-approve'
-alias tfo='terraform output'
+alias tfd='terraform destroy -auto-approve'
 alias tfi='terraform init'
+alias tfo='terraform output'
 
 # wireguard
 alias wg-list='sudo ls /usr/local/etc/wireguard'

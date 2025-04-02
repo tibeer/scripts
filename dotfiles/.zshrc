@@ -18,6 +18,7 @@ export PATH="${PATH}:${HOME}/.krew/bin"
 export PATH="/opt/homebrew/opt/openjdk/bin:${PATH}"
 export PATH="${PATH}:${HOME}/go/bin"
 export PATH="${PATH}:/Users/tbeermann/.local/bin"
+export DOCKER_HOST="unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')"
 
 # aliases
 source "${HOME}/.aliases"
@@ -39,3 +40,5 @@ source "${HOME}/.config/google"
 bindkey "^[[H" beginning-of-line
 bindkey "^[[F" end-of-line
 
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/tbeermann/.lmstudio/bin"
