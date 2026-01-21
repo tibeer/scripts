@@ -17,6 +17,6 @@
 [tag]
 	gpgSign = true
 [user]
-	email = *****
 	name = Tim Beermann
 	signingKey = ~/.ssh/id_ed25519.pub
+	email = *****

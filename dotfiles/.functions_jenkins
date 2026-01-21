@@ -7,7 +7,7 @@
 jenkins() {
     # settings for jenkins
     base_url="${JENKINS_BASE_URL}"
-    url="${base_url}/job/FintusDevTeam/view"
+    url="${base_url}/job/DevTeam/view"
     login="${JENKINS_USER_NAME}:${JENKINS_API_TOKEN}"
 
     # settgings for dialog
@@ -32,16 +32,15 @@ jenkins() {
 
     select_environment() {
         MENU="Choose environment:"
-        OPTIONS=("dev-core-5" ""
-                 "" ""
-                 "dev-core-1" ""
-                 "dev-core-2" ""
-                 "dev-core-3" ""
-                 "dev-core-4" ""
-                 "dev-core-6" ""
-                 "dev-core-7" ""
-                 "dev-core-8" ""
-                 "dev-core-0" "")
+        OPTIONS=("dev-0" ""
+                 "dev-1" ""
+                 "dev-2" ""
+                 "dev-3" ""
+                 "dev-4" ""
+                 "dev-5" ""
+                 "dev-6" ""
+                 "dev-7" ""
+                 "dev-8" "")
         CHOICE=$(dialog --clear \
                         --stdout \
                         --title "$TITLE" \
@@ -53,23 +52,20 @@ jenkins() {
 
     select_deployment() {
         MENU="Choose deployment:"
-        OPTIONS=("sq-api" ""
-                 "csc-api" ""
-                 "sq-client" ""
-                 "" ""
-                 "core-api" ""
-                 "core-camunda-dev" ""
-                 "core-client" ""
+        OPTIONS=("a-api" ""
+                 "a-dev" ""
+                 "a-client" ""
                  "keycloak" ""
-                 "pcm-api" ""
-                 "pcm-client" ""
-                 "pdm-api" ""
+                 "b-api" ""
+                 "b-client" ""
+                 "c-api" ""
                  "pgadmin" ""
-                 "po-api" ""
-                 "po-client" ""
+                 "d-api" ""
+                 "d-client" ""
                  "postgresql" ""
-                 "ssp-api" ""
-                 "ssp-client" "")
+                 "e-api" ""
+                 "e-client" ""
+                 "f-api" "")
         CHOICE=$(dialog --clear \
                         --stdout \
                         --title "$TITLE" \

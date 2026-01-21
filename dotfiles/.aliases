@@ -9,9 +9,8 @@ alias gl='glab mr create --fill --push --remove-source-branch --squash-before-me
 
 # kubernetes
 alias k='kubectl'
-alias port='open /Applications/DBeaver.app; kubectl port-forward svc/postgresql 5432:5432'
-alias sqv3='kubectl port-forward svc/minio 5000:80'
-alias psql='kubectl exec -it "$(kubectl get pods -l app=postgresql -o name | tail -1)" -- /bin/sh -c "PGPASSWORD=$(echo $(kubectl get secret postgresql -o jsonpath='{.data.PASSWORD}' | base64 -d)) /usr/bin/psql -U postgres"'
+#alias port='open /Applications/DBeaver.app; kubectl port-forward svc/postgresql 5432:5432'
+#alias psql='kubectl exec -it "$(kubectl get pods -l app=postgresql -o name | tail -1)" -- /bin/sh -c "PGPASSWORD=$(echo $(kubectl get secret postgresql -o jsonpath='{.data.PASSWORD}' | base64 -d)) /usr/bin/psql -U postgres"'
 
 # ls
 alias la='ls -al'

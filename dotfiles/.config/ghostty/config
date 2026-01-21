@@ -3,7 +3,7 @@
 # This template file has been automatically created at the following
 # path since Ghostty couldn't find any existing config files on your system:
 #
-#   /Users/tbeermann/Library/Application Support/com.mitchellh.ghostty/config
+#   ${HOME}/Library/Application Support/com.mitchellh.ghostty/config
 #
 # The template does not set any default options, since Ghostty ships
 # with sensible defaults for all options. Users should only need to set
@@ -49,7 +49,7 @@ macos-icon = holographic
 cursor-style = block
 cursor-style-blink = false
 shell-integration = detect
-shell-integration-features = no-cursor
+shell-integration-features = no-cursor,ssh-env
 term = xterm-256color
-background-opacity = 0.95
+#background-opacity = 0.95
 window-inherit-working-directory = false
